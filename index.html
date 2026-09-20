@@ -1,0 +1,802 @@
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bugünün Bilgisi</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            background: transparent;
+        }
+
+
+        /* ANA PANEL */
+
+        .panel {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+
+        /* CALLOUT */
+
+        .card {
+            min-height: 180px;
+
+            padding: 28px;
+
+            border-radius: 6px;
+
+            background: #2f2f2f;
+            border: 1px solid #3a3a3a;
+
+            color: #ffffff;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            transition:
+                opacity 0.35s ease,
+                transform 0.35s ease;
+
+            cursor: default;
+
+            user-select: none;
+
+            -webkit-user-select: none;
+
+            touch-action: manipulation;
+        }
+
+
+        /* DERS */
+
+        .subject {
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 10px;
+
+            color: #b5b5b5;
+        }
+
+
+        /* BAŞLIK */
+
+        .title {
+            font-size: 23px;
+
+            font-weight: 700;
+
+            margin-bottom: 12px;
+
+            color: #ffffff;
+        }
+
+
+        /* İÇERİK */
+
+        .content {
+            font-size: 16px;
+
+            line-height: 1.6;
+
+            color: #e6e6e6;
+        }
+
+
+        /* SÜRE ÇUBUĞININ ARKA PLANI */
+
+        .progress-container {
+
+            width: 100%;
+
+            height: 5px;
+
+            margin-top: 12px;
+
+            overflow: hidden;
+
+            border-radius: 10px;
+
+            background: #444444;
+        }
+
+
+        /* SÜRE ÇUBUĞI */
+
+        .progress {
+
+            height: 100%;
+
+            width: 100%;
+
+            transform-origin: left;
+
+            background: #ffffff;
+
+            transform: scaleX(1);
+        }
+
+
+        /* 1 / 3 */
+
+        .counter {
+
+            text-align: right;
+
+            margin-top: 7px;
+
+            font-size: 12px;
+
+            color: #888888;
+        }
+
+
+        /* MOBİL */
+
+        @media (max-width: 500px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 22px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .content {
+                font-size: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="panel">
+
+
+    <!-- CALLOUT -->
+
+    <div
+        class="card"
+        id="card"
+    >
+
+        <div
+            class="subject"
+            id="subject"
+        ></div>
+
+
+        <div
+            class="title"
+            id="title"
+        ></div>
+
+
+        <div
+            class="content"
+            id="content"
+        ></div>
+
+    </div>
+
+
+    <!-- SÜRE ÇUBUĞU -->
+
+    <div
+        class="progress-container"
+    >
+
+        <div
+            class="progress"
+            id="progress"
+        ></div>
+
+    </div>
+
+
+    <!-- SAYI -->
+
+    <div
+        class="counter"
+        id="counter"
+    ></div>
+
+
+</div>
+
+
+
+<script>
+
+
+/* =========================================================
+   BİLGİLER
+   ========================================================= */
+
+
+const bilgiler = [
+
+    {
+        subject: "📚 TYT Türkçe",
+
+        title: "Küçük Ünlü Uyumu",
+
+        content:
+        "Düz ünlülerden (a, e, ı, i) sonra yine düz; yuvarlak ünlülerden (o, ö, u, ü) sonra dar-yuvarlak (u, ü) veya düz-geniş (a, e) ünlüler gelebilir."
+    },
+
+
+    {
+        subject: "🧬 TYT Biyoloji",
+
+        title: "Enzimler",
+
+        content:
+        "Enzimler aktivasyon enerjisini düşürerek tepkimelerin daha hızlı gerçekleşmesini sağlar. Tepkime sonunda harcanmazlar."
+    },
+
+
+    {
+        subject: "🏛️ TYT Tarih",
+
+        title: "Tarih ve Zaman",
+
+        content:
+        "Tarih, geçmişte yaşamış insan topluluklarının faaliyetlerini yer ve zaman göstererek, neden-sonuç ilişkisi içinde inceleyen bilim dalıdır."
+    }
+
+];
+
+
+
+/* =========================================================
+   AYARLAR
+   ========================================================= */
+
+
+/* Bir bilginin ekranda kalacağı süre */
+
+const sure = 10000;
+
+
+/* =========================================================
+   DEĞİŞKENLER
+   ========================================================= */
+
+
+let index = 0;
+
+
+/* Kalan süre */
+
+let kalanSure = sure;
+
+
+/* Zamanlayıcı */
+
+let zamanlayici = null;
+
+
+/* Zamanlayıcının başladığı an */
+
+let baslangicZamani = null;
+
+
+/* =========================================================
+   HTML ELEMANLARI
+   ========================================================= */
+
+
+const subject =
+    document.getElementById("subject");
+
+
+const title =
+    document.getElementById("title");
+
+
+const content =
+    document.getElementById("content");
+
+
+const progress =
+    document.getElementById("progress");
+
+
+const counter =
+    document.getElementById("counter");
+
+
+const card =
+    document.getElementById("card");
+
+
+
+/* =========================================================
+   BİLGİYİ GÖSTER
+   ========================================================= */
+
+
+function goster() {
+
+
+    const bilgi =
+        bilgiler[index];
+
+
+    /*
+       Önce eski içeriği hafifçe gizle
+    */
+
+    card.style.opacity = "0";
+
+    card.style.transform =
+        "translateY(8px)";
+
+
+    setTimeout(() => {
+
+
+        /*
+           Yeni içerik
+        */
+
+
+        subject.textContent =
+            bilgi.subject;
+
+
+        title.textContent =
+            bilgi.title;
+
+
+        content.textContent =
+            bilgi.content;
+
+
+        counter.textContent =
+            `${index + 1} / ${bilgiler.length}`;
+
+
+
+        /*
+           Kartı tekrar göster
+        */
+
+
+        card.style.opacity = "1";
+
+        card.style.transform =
+            "translateY(0)";
+
+
+
+        /*
+           Progress bar'ı sıfırla
+        */
+
+
+        progress.style.transition =
+            "none";
+
+        progress.style.transform =
+            "scaleX(1)";
+
+
+
+        /*
+           Tarayıcıya güncellemeyi uygulat
+        */
+
+
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(() => {
+
+
+                progress.style.transition =
+                    `transform ${kalanSure}ms linear`;
+
+
+                progress.style.transform =
+                    "scaleX(0)";
+
+
+            });
+
+        });
+
+
+    }, 300);
+
+}
+
+
+
+/* =========================================================
+   SONRAKİ BİLGİ
+   ========================================================= */
+
+
+function sonraki() {
+
+
+    index++;
+
+
+    /*
+       Son bilgiye geldiysek
+       tekrar ilk bilgiye dön
+    */
+
+
+    if (index >= bilgiler.length) {
+
+        index = 0;
+
+    }
+
+
+    /*
+       Yeni bilgi için süreyi sıfırla
+    */
+
+    kalanSure = sure;
+
+
+    /*
+       Yeni bilgiyi göster
+    */
+
+    goster();
+
+
+    /*
+       Yeni zamanlayıcı başlat
+    */
+
+    zamanlayiciyiBaslat();
+
+}
+
+
+
+/* =========================================================
+   ZAMANLAYICIYI BAŞLAT
+   ========================================================= */
+
+
+function zamanlayiciyiBaslat() {
+
+
+    /*
+       Zaten çalışıyorsa tekrar başlatma
+    */
+
+    if (zamanlayici !== null) {
+
+        return;
+
+    }
+
+
+    /*
+       Başlangıç zamanını kaydet
+    */
+
+    baslangicZamani =
+        Date.now();
+
+
+    /*
+       Kalan süre kadar bekle
+    */
+
+    zamanlayici =
+        setTimeout(() => {
+
+
+            /*
+               Zamanlayıcıyı temizle
+            */
+
+            zamanlayici = null;
+
+
+            /*
+               Sonraki içeriğe geç
+            */
+
+            sonraki();
+
+
+        }, kalanSure);
+
+}
+
+
+
+/* =========================================================
+   ZAMANLAYICIYI DURDUR
+   ========================================================= */
+
+
+function zamanlayiciyiDurdur() {
+
+
+    /*
+       Zamanlayıcı çalışmıyorsa
+       hiçbir şey yapma
+    */
+
+    if (zamanlayici === null) {
+
+        return;
+
+    }
+
+
+    /*
+       Zamanlayıcıyı durdur
+    */
+
+    clearTimeout(zamanlayici);
+
+
+    /*
+       Ne kadar zaman geçti?
+    */
+
+    const gecenSure =
+        Date.now() - baslangicZamani;
+
+
+    /*
+       Kalan süreden geçen zamanı çıkar
+    */
+
+    kalanSure =
+        kalanSure - gecenSure;
+
+
+    /*
+       Negatif olmasını engelle
+    */
+
+    if (kalanSure < 0) {
+
+        kalanSure = 0;
+
+    }
+
+
+    /*
+       Progress bar'ın
+       mevcut konumunu hesapla
+    */
+
+    const mevcutOran =
+        Math.max(
+            0,
+            kalanSure / sure
+        );
+
+
+    /*
+       Progress bar'ı
+       bulunduğu yerde dondur
+    */
+
+    progress.style.transition =
+        "none";
+
+
+    progress.style.transform =
+        `scaleX(${mevcutOran})`;
+
+
+    /*
+       Zamanlayıcı artık çalışmıyor
+    */
+
+    zamanlayici = null;
+
+}
+
+
+
+/* =========================================================
+   DEVAM ET
+   ========================================================= */
+
+
+function devamEt() {
+
+
+    /*
+       Zaten çalışıyorsa tekrar başlatma
+    */
+
+    if (zamanlayici !== null) {
+
+        return;
+
+    }
+
+
+    /*
+       Kalan süre bittiyse
+       doğrudan sonraki bilgiye geç
+    */
+
+    if (kalanSure <= 0) {
+
+        sonraki();
+
+        return;
+
+    }
+
+
+    /*
+       Kaldığı yerden devam et
+    */
+
+    zamanlayiciyiBaslat();
+
+
+    /*
+       Progress bar'ı
+       kalan süre kadar hareket ettir
+    */
+
+    progress.style.transition =
+        `transform ${kalanSure}ms linear`;
+
+
+    progress.style.transform =
+        "scaleX(0)";
+
+}
+
+
+
+/* =========================================================
+   MOUSE
+   ========================================================= */
+
+
+/*
+   Mouse karta geldiğinde
+   zaman durur
+*/
+
+card.addEventListener(
+    "mouseenter",
+    () => {
+
+        zamanlayiciyiDurdur();
+
+    }
+);
+
+
+/*
+   Mouse karttan çıktığında
+   zaman devam eder
+*/
+
+card.addEventListener(
+    "mouseleave",
+    () => {
+
+        devamEt();
+
+    }
+);
+
+
+
+/* =========================================================
+   TOUCH / TELEFON
+   ========================================================= */
+
+
+/*
+   Parmağı karta bastığında
+   zaman durur
+*/
+
+card.addEventListener(
+    "touchstart",
+    () => {
+
+        zamanlayiciyiDurdur();
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/*
+   Parmağı kaldırdığında
+   zaman devam eder
+*/
+
+card.addEventListener(
+    "touchend",
+    () => {
+
+        devamEt();
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+
+/* =========================================================
+   İLK ÇALIŞTIRMA
+   ========================================================= */
+
+
+/*
+   İlk bilgiyi göster
+*/
+
+goster();
+
+
+/*
+   Zamanlayıcıyı başlat
+*/
+
+zamanlayiciyiBaslat();
+
+
+</script>
+
+
+</body>
+</html>
+```
